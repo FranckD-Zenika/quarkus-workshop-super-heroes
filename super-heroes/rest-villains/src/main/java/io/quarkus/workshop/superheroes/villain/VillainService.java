@@ -8,48 +8,61 @@ import java.util.Optional;
 
 import static javax.transaction.Transactional.TxType.SUPPORTS;
 
-@ApplicationScoped
-@Transactional
-public class VillainService {
 
-    @Transactional(SUPPORTS)
-    public List<Villain> findAll() {
-        return Villain.findAll().list();
-    }
+public interface VillainService {
 
-    @Transactional(SUPPORTS)
-    public Optional<Villain> findByIdOptional(long id) {
-        return Villain.findByIdOptional(id);
-    }
+    List<Villain> findAll();
+    Optional<Villain> findByIdOptional(long id);
+    Villain findById(long id);
+    Villain findRandom();
+    Villain persist(@Valid Villain villain);
+    Villain update(@Valid Villain villain);
+    void delete(long id);
 
-    @Transactional(SUPPORTS)
-    public Villain findById(long id) {
-        return Villain.findById(id);
-    }
+    @ApplicationScoped
+    @Transactional
+    class DefaultVillainService implements VillainService {
 
-    @Transactional(SUPPORTS)
-    public Villain findRandom() {
-        return Villain.findRandom();
-    }
+        @Transactional(SUPPORTS)
+        public List<Villain> findAll() {
+            return Villain.findAll().list();
+        }
 
-    public Villain persist(@Valid Villain villain) {
-        villain.persist();
-        return villain;
-    }
+        @Transactional(SUPPORTS)
+        public Optional<Villain> findByIdOptional(long id) {
+            return Villain.findByIdOptional(id);
+        }
 
-    public Villain update(@Valid Villain villain) {
-        Villain toUpdate = Villain.findById(villain.id);
-        toUpdate.setName(villain.getName());
-        toUpdate.setOtherName(villain.getOtherName());
-        toUpdate.setLevel(villain.getLevel());
-        toUpdate.setPicture(villain.getPicture());
-        toUpdate.setPowers(villain.getPowers());
-        return toUpdate;
-    }
+        @Transactional(SUPPORTS)
+        public Villain findById(long id) {
+            return Villain.findById(id);
+        }
 
-    public void delete(long id) {
-        Villain toDelete = Villain.findById(id);
-        toDelete.delete();
+        @Transactional(SUPPORTS)
+        public Villain findRandom() {
+            return Villain.findRandom();
+        }
+
+        public Villain persist(@Valid Villain villain) {
+            villain.persist();
+            return villain;
+        }
+
+        public Villain update(@Valid Villain villain) {
+            Villain toUpdate = Villain.findById(villain.id);
+            toUpdate.setName(villain.getName());
+            toUpdate.setOtherName(villain.getOtherName());
+            toUpdate.setLevel(villain.getLevel());
+            toUpdate.setPicture(villain.getPicture());
+            toUpdate.setPowers(villain.getPowers());
+            return toUpdate;
+        }
+
+        public void delete(long id) {
+            Villain toDelete = Villain.findById(id);
+            toDelete.delete();
+        }
+
     }
 
 }
