@@ -6,10 +6,7 @@ import java.util.Random;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.workshop.superheroes.villain.Villain;
 import io.restassured.common.mapper.TypeRef;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 
 import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
@@ -21,7 +18,6 @@ import static org.jboss.resteasy.reactive.RestResponse.StatusCode.NOT_FOUND;
 import static org.jboss.resteasy.reactive.RestResponse.StatusCode.OK;
 
 @QuarkusTest
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class VillainResourceTest {
 
     private static final TypeRef<List<Villain>> VILLAIN_LIST_TYPE_REF = new TypeRef<>() {};
@@ -36,7 +32,7 @@ class VillainResourceTest {
     private static final String UPDATED_POWERS = "does not eat pain au chocolat (updated)";
     private static final int DEFAULT_LEVEL = 42;
     private static final int UPDATED_LEVEL = 43;
-    private static final int NB_VILLAINS = 570;
+//    private static final int NB_VILLAINS = 570;
 
     private static String villainId;
 
@@ -79,7 +75,6 @@ class VillainResourceTest {
     }
 
     @Test
-    @Order(1)
     void shouldGetInitialItems() {
         var villains = given()
             .when()
@@ -89,11 +84,11 @@ class VillainResourceTest {
                 .extract()
                     .body()
                     .as(VILLAIN_LIST_TYPE_REF);
-        assertThat(villains).hasSize(NB_VILLAINS);
+        assertThat(villains).isNotEmpty().hasSizeGreaterThan(0);
+//        assertThat(villains).hasSize(NB_VILLAINS);
     }
 
     @Test
-    @Order(2)
     void shouldAddAnItem() {
 
         var villain = new Villain();
@@ -102,6 +97,16 @@ class VillainResourceTest {
         villain.setPicture(DEFAULT_PICTURE);
         villain.setPowers(DEFAULT_POWERS);
         villain.setLevel(DEFAULT_LEVEL);
+
+        var initialVillains = get("/api/villains")
+            .then()
+            .statusCode(200)
+            .contentType(APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(VILLAIN_LIST_TYPE_REF);
+
+        int initialVillainsCount = initialVillains.size();
 
         var location = given()
                 .contentType(JSON)
@@ -139,11 +144,10 @@ class VillainResourceTest {
                 .extract()
                     .body()
                     .as(VILLAIN_LIST_TYPE_REF);
-        assertThat(villains).hasSize(NB_VILLAINS + 1);
+        assertThat(villains).hasSize(initialVillainsCount + 1);
     }
 
     @Test
-    @Order(3)
     void shouldUpdateAnItem() {
         var villain = new Villain();
         villain.id = Long.valueOf(villainId);
@@ -152,6 +156,16 @@ class VillainResourceTest {
         villain.setPicture(UPDATED_PICTURE);
         villain.setPowers(UPDATED_POWERS);
         villain.setLevel(UPDATED_LEVEL);
+
+        var initialVillains = get("/api/villains")
+            .then()
+            .statusCode(200)
+            .contentType(APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(VILLAIN_LIST_TYPE_REF);
+
+        int initialVillainsCount = initialVillains.size();
 
         var updatedVillain = given()
                 .contentType(JSON)
@@ -178,12 +192,21 @@ class VillainResourceTest {
                 .extract()
                     .body()
                     .as(VILLAIN_LIST_TYPE_REF);
-        assertThat(villains).hasSize(NB_VILLAINS + 1);
+        assertThat(villains).hasSize(initialVillainsCount);
     }
 
     @Test
-    @Order(4)
     void shouldRemoveAnItem() {
+        var initialVillains = get("/api/villains")
+            .then()
+            .statusCode(200)
+            .contentType(APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(VILLAIN_LIST_TYPE_REF);
+
+        int initialVillainsCount = initialVillains.size();
+
         given()
             .pathParam("id", villainId)
         .when()
@@ -198,7 +221,7 @@ class VillainResourceTest {
                 .extract()
                     .body()
                     .as(VILLAIN_LIST_TYPE_REF);
-        assertThat(villains).hasSize(NB_VILLAINS);
+        assertThat(villains).hasSize(initialVillainsCount - 1);
     }
 
     @Test

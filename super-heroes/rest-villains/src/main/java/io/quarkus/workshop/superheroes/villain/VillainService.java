@@ -6,6 +6,8 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import static javax.transaction.Transactional.TxType.SUPPORTS;
 
 
@@ -22,6 +24,12 @@ public interface VillainService {
     @ApplicationScoped
     @Transactional
     class DefaultVillainService implements VillainService {
+
+        private final double levelMultiplier;
+
+        DefaultVillainService(@ConfigProperty(name = "level.multiplier", defaultValue="1.0") double levelMultiplier) {
+            this.levelMultiplier = levelMultiplier;
+        }
 
         @Transactional(SUPPORTS)
         public List<Villain> findAll() {
@@ -44,6 +52,7 @@ public interface VillainService {
         }
 
         public Villain persist(@Valid Villain villain) {
+            villain.setLevel((int) Math.round(villain.getLevel() * levelMultiplier));
             villain.persist();
             return villain;
         }
