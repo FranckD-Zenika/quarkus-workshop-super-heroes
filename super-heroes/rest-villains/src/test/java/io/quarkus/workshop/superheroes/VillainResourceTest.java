@@ -234,4 +234,14 @@ class VillainResourceTest {
             .body(is("Hello Villain Resource"));
     }
 
+    @Test
+    void testOpenApi() {
+        given()
+            .accept(JSON)
+        .when()
+            .get("/q/openapi")
+        .then()
+            .statusCode(200);
+    }
+
 }
